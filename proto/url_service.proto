@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+option go_package = "./proto";
+
+package urlservice;
+
+service URLService {
+  rpc CheckURL(CheckURLRequest) returns (CheckURLResponse);
+  rpc FilterHTML(FilterHTMLRequest) returns (FilterHTMLResponse);
+}
+
+message CheckURLRequest {
+  string url = 1;
+}
+
+message CheckURLResponse {
+  string url = 1;
+  bool is_malicious = 2;
+}
+
+message FilterHTMLRequest {
+  string html = 1;
+}
+
+message FilterHTMLResponse {
+  string filtered_html = 1;
+  repeated URLResult url_results = 2;
+}
+
+message URLResult {
+  string url = 1;
+  bool is_malicious = 2;
+}
