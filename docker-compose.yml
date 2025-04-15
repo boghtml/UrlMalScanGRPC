@@ -15,7 +15,19 @@ services:
       - ./proto:/app/proto
       - ./server:/app/server
 
- 
+  client:
+    build:
+      context: .
+      dockerfile: client/Dockerfile
+    ports:
+      - "8080:8080"
+    depends_on:
+      - server
+    environment:
+      - GRPC_SERVER_ADDR=server:50051
+    volumes:
+      - ./proto:/app/proto
+      - ./client:/app/client
 
   redis:
     image: redis:alpine
