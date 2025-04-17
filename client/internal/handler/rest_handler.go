@@ -64,7 +64,7 @@ func (h *RESTHandler) FilterHTML(c *gin.Context) {
 	file, err := c.FormFile("html_file")
 	if err != nil {
 		log.Printf("Error getting HTML file: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "HTML файл не надано"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "HTML file not provided"})
 		return
 	}
 
@@ -73,7 +73,7 @@ func (h *RESTHandler) FilterHTML(c *gin.Context) {
 	openedFile, err := file.Open()
 	if err != nil {
 		log.Printf("Error opening file: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Не вдалося відкрити файл"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not open file"})
 		return
 	}
 	defer openedFile.Close()
@@ -81,7 +81,7 @@ func (h *RESTHandler) FilterHTML(c *gin.Context) {
 	htmlContent, err := ioutil.ReadAll(openedFile)
 	if err != nil {
 		log.Printf("Error reading file: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Не вдалося прочитати файл"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Could not read file"})
 		return
 	}
 
