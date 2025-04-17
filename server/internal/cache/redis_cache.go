@@ -16,6 +16,7 @@ type URLCache struct {
 
 type CacheEntry struct {
 	IsMalicious bool      `json:"is_malicious"`
+	Reason      string    `json:"reason"`
 	CheckedAt   time.Time `json:"checked_at"`
 }
 
@@ -39,27 +40,28 @@ func NewURLCache(addr, password string) *URLCache {
 	}
 }
 
-func (c *URLCache) Get(ctx context.Context, url string) (bool, bool) {
+func (c *URLCache) Get(ctx context.Context, url string) (bool, string, bool) {
 	val, err := c.client.Get(ctx, url).Result()
 	if err == redis.Nil {
-		return false, false
+		return false, "", false
 	}
 	if err != nil {
 		log.Printf("Redis error during Get: %v", err)
-		return false, false
+		return false, "", false
 	}
 
 	var entry CacheEntry
 	if err := json.Unmarshal([]byte(val), &entry); err != nil {
 		log.Printf("Cache entry deserialization failed: %v", err)
-		return false, false
+		return false, "", false
 	}
-	return entry.IsMalicious, true
+	return entry.IsMalicious, entry.Reason, true
 }
 
-func (c *URLCache) Set(ctx context.Context, url string, isMalicious bool) error {
+func (c *URLCache) Set(ctx context.Context, url string, isMalicious bool, reason string) error {
 	entry := &CacheEntry{
 		IsMalicious: isMalicious,
+		Reason:      reason,
 		CheckedAt:   time.Now(),
 	}
 
