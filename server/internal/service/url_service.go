@@ -10,8 +10,13 @@ import (
 	"github.com/boghtml/url-filter-project/server/internal/cache"
 )
 
+type URLServiceIface interface {
+	CheckURL(ctx context.Context, url string) (bool, string, error)
+	FilterHTML(ctx context.Context, html string) (string, []map[string]interface{}, error)
+}
+
 type URLService struct {
-	cache    *cache.URLCache
+	cache    cache.URLCacheIface
 	urlRegex *regexp.Regexp
 
 	blacklist            []string
@@ -21,7 +26,7 @@ type URLService struct {
 	maxURLLength         int
 }
 
-func NewURLService(redisCache *cache.URLCache) *URLService {
+func NewURLService(c cache.URLCacheIface) *URLService {
 	regexPattern := `(https?://[^\s"'<>]+|www\.[^\s"'<>]+)`
 	urlRegex, err := regexp.Compile(regexPattern)
 	if err != nil {
@@ -34,7 +39,7 @@ func NewURLService(redisCache *cache.URLCache) *URLService {
 	}
 
 	return &URLService{
-		cache:                redisCache,
+		cache:                c,
 		urlRegex:             urlRegex,
 		blacklist:            []string{"malicious.com", "phish.net", "bad.site", "malware.com", "trojan-download.com"},
 		suspiciousPatterns:   []string{"phish", "hack", "malware", "trojan", "virus", "warez", "crack", "keygen"},
@@ -111,14 +116,14 @@ func (s *URLService) FilterHTML(ctx context.Context, html string) (string, []map
 
 func (s *URLService) isURLMalicious(urlStr string) (bool, string) {
 	if len(urlStr) > s.maxURLLength {
-		reason := "URL too long"
+		reason := "The URL is too long"
 		log.Printf("URL %s is too long (%d > %d): %s", urlStr, len(urlStr), s.maxURLLength, reason)
 		return true, reason
 	}
 
 	parsedURL, err := url.Parse(urlStr)
-	if err != nil {
-		reason := "Invalid URL format"
+	if err != nil || parsedURL.Scheme == "" || parsedURL.Host == "" {
+		reason := "The URL format is invalid"
 		log.Printf("Invalid URL %s: %v: %s", urlStr, err, reason)
 		return true, reason
 	}
@@ -126,9 +131,17 @@ func (s *URLService) isURLMalicious(urlStr string) (bool, string) {
 	host := parsedURL.Hostname()
 	urlLower := strings.ToLower(urlStr)
 
+	for _, ext := range s.suspiciousExtensions {
+		if strings.HasSuffix(strings.ToLower(parsedURL.Path), ext) {
+			reason := "The URL contains a link to a suspicious file type"
+			log.Printf("URL %s has suspicious extension %s: %s", urlStr, ext, reason)
+			return true, reason
+		}
+	}
+
 	for _, badDomain := range s.blacklist {
 		if strings.Contains(host, badDomain) {
-			reason := "Domain is blacklisted"
+			reason := "The domain is blacklisted"
 			log.Printf("URL %s matches blacklist domain %s: %s", urlStr, badDomain, reason)
 			return true, reason
 		}
@@ -136,16 +149,8 @@ func (s *URLService) isURLMalicious(urlStr string) (bool, string) {
 
 	for _, pattern := range s.suspiciousPatterns {
 		if strings.Contains(urlLower, pattern) {
-			reason := "URL contains suspicious keywords"
+			reason := "The URL contains suspicious keywords"
 			log.Printf("URL %s contains suspicious pattern %s: %s", urlStr, pattern, reason)
-			return true, reason
-		}
-	}
-
-	for _, ext := range s.suspiciousExtensions {
-		if strings.HasSuffix(strings.ToLower(parsedURL.Path), ext) {
-			reason := "URL contains a link to a suspicious file type"
-			log.Printf("URL %s has suspicious extension %s: %s", urlStr, ext, reason)
 			return true, reason
 		}
 	}

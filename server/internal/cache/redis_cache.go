@@ -9,6 +9,11 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+type URLCacheIface interface {
+	Get(ctx context.Context, url string) (bool, string, bool)
+	Set(ctx context.Context, url string, isMalicious bool, reason string) error
+}
+
 type URLCache struct {
 	client *redis.Client
 	ttl    time.Duration

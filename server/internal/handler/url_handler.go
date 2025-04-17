@@ -10,11 +10,11 @@ import (
 
 type URLHandler struct {
 	pb.UnimplementedURLServiceServer
-	urlService *service.URLService
+	urlService service.URLServiceIface
 }
 
-func NewURLHandler(urlService *service.URLService) *URLHandler {
-	return &URLHandler{urlService: urlService}
+func NewURLHandler(svc service.URLServiceIface) *URLHandler {
+	return &URLHandler{urlService: svc}
 }
 
 func (h *URLHandler) CheckURL(ctx context.Context, req *pb.CheckURLRequest) (*pb.CheckURLResponse, error) {
