@@ -65,7 +65,8 @@ func (c *URLClient) CheckURL(url string) (*pb.CheckURLResponse, error) {
 		return nil, err
 	}
 
-	log.Printf("Received CheckURL response: %+v", response)
+	log.Printf("Received CheckURL response: URL=%s, IsMalicious=%t, Reason=%s",
+		response.Url, response.IsMalicious, response.Reason)
 	return response, nil
 }
 
@@ -83,7 +84,8 @@ func (c *URLClient) FilterHTMLURLs(htmlContent string) (*pb.FilterHTMLResponse, 
 		return nil, err
 	}
 
-	log.Printf("Received FilterHTML response with filtered HTML length: %d", len(response.FilteredHtml))
+	log.Printf("Received FilterHTML response with filtered HTML length: %d and %d URL results",
+		len(response.FilteredHtml), len(response.UrlResults))
 	return response, nil
 }
 

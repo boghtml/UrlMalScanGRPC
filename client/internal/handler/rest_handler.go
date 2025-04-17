@@ -25,6 +25,7 @@ type URLCheckRequest struct {
 type URLCheckResponse struct {
 	URL         string `json:"url"`
 	IsMalicious bool   `json:"is_malicious"`
+	Reason      string `json:"reason,omitempty"`
 }
 
 func (h *RESTHandler) CheckURL(c *gin.Context) {
@@ -44,11 +45,13 @@ func (h *RESTHandler) CheckURL(c *gin.Context) {
 		return
 	}
 
-	log.Printf("URL checked: %s, Is malicious: %t", resp.Url, resp.IsMalicious)
+	log.Printf("URL checked: %s, Is malicious: %t, Reason: %s",
+		resp.Url, resp.IsMalicious, resp.Reason)
 
 	c.JSON(http.StatusOK, URLCheckResponse{
 		URL:         resp.Url,
 		IsMalicious: resp.IsMalicious,
+		Reason:      resp.Reason,
 	})
 }
 
@@ -61,7 +64,7 @@ func (h *RESTHandler) FilterHTML(c *gin.Context) {
 	file, err := c.FormFile("html_file")
 	if err != nil {
 		log.Printf("Error getting HTML file: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "HTML file not provided"})
+		c.JSON(http.StatusBadRequest, gin.H{"error": "HTML файл не надано"})
 		return
 	}
 
@@ -70,7 +73,7 @@ func (h *RESTHandler) FilterHTML(c *gin.Context) {
 	openedFile, err := file.Open()
 	if err != nil {
 		log.Printf("Error opening file: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Do not open the file"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Не вдалося відкрити файл"})
 		return
 	}
 	defer openedFile.Close()
@@ -78,7 +81,7 @@ func (h *RESTHandler) FilterHTML(c *gin.Context) {
 	htmlContent, err := ioutil.ReadAll(openedFile)
 	if err != nil {
 		log.Printf("Error reading file: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Do not open the file"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Не вдалося прочитати файл"})
 		return
 	}
 
@@ -96,6 +99,7 @@ func (h *RESTHandler) FilterHTML(c *gin.Context) {
 		urlResults = append(urlResults, URLCheckResponse{
 			URL:         result.Url,
 			IsMalicious: result.IsMalicious,
+			Reason:      result.Reason,
 		})
 	}
 

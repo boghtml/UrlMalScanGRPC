@@ -2,7 +2,7 @@
 // versions:
 // 	protoc-gen-go v1.36.6
 // 	protoc        v6.30.2
-// source: url_service.proto
+// source: proto/url_service.proto
 
 package proto
 
@@ -30,7 +30,7 @@ type CheckURLRequest struct {
 
 func (x *CheckURLRequest) Reset() {
 	*x = CheckURLRequest{}
-	mi := &file_url_service_proto_msgTypes[0]
+	mi := &file_proto_url_service_proto_msgTypes[0]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -42,7 +42,7 @@ func (x *CheckURLRequest) String() string {
 func (*CheckURLRequest) ProtoMessage() {}
 
 func (x *CheckURLRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_url_service_proto_msgTypes[0]
+	mi := &file_proto_url_service_proto_msgTypes[0]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -55,7 +55,7 @@ func (x *CheckURLRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckURLRequest.ProtoReflect.Descriptor instead.
 func (*CheckURLRequest) Descriptor() ([]byte, []int) {
-	return file_url_service_proto_rawDescGZIP(), []int{0}
+	return file_proto_url_service_proto_rawDescGZIP(), []int{0}
 }
 
 func (x *CheckURLRequest) GetUrl() string {
@@ -69,13 +69,14 @@ type CheckURLResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Url           string                 `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
 	IsMalicious   bool                   `protobuf:"varint,2,opt,name=is_malicious,json=isMalicious,proto3" json:"is_malicious,omitempty"`
+	Reason        string                 `protobuf:"bytes,3,opt,name=reason,proto3" json:"reason,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *CheckURLResponse) Reset() {
 	*x = CheckURLResponse{}
-	mi := &file_url_service_proto_msgTypes[1]
+	mi := &file_proto_url_service_proto_msgTypes[1]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -87,7 +88,7 @@ func (x *CheckURLResponse) String() string {
 func (*CheckURLResponse) ProtoMessage() {}
 
 func (x *CheckURLResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_url_service_proto_msgTypes[1]
+	mi := &file_proto_url_service_proto_msgTypes[1]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -100,7 +101,7 @@ func (x *CheckURLResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CheckURLResponse.ProtoReflect.Descriptor instead.
 func (*CheckURLResponse) Descriptor() ([]byte, []int) {
-	return file_url_service_proto_rawDescGZIP(), []int{1}
+	return file_proto_url_service_proto_rawDescGZIP(), []int{1}
 }
 
 func (x *CheckURLResponse) GetUrl() string {
@@ -117,6 +118,13 @@ func (x *CheckURLResponse) GetIsMalicious() bool {
 	return false
 }
 
+func (x *CheckURLResponse) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
+
 type FilterHTMLRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Html          string                 `protobuf:"bytes,1,opt,name=html,proto3" json:"html,omitempty"`
@@ -126,7 +134,7 @@ type FilterHTMLRequest struct {
 
 func (x *FilterHTMLRequest) Reset() {
 	*x = FilterHTMLRequest{}
-	mi := &file_url_service_proto_msgTypes[2]
+	mi := &file_proto_url_service_proto_msgTypes[2]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -138,7 +146,7 @@ func (x *FilterHTMLRequest) String() string {
 func (*FilterHTMLRequest) ProtoMessage() {}
 
 func (x *FilterHTMLRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_url_service_proto_msgTypes[2]
+	mi := &file_proto_url_service_proto_msgTypes[2]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -151,7 +159,7 @@ func (x *FilterHTMLRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FilterHTMLRequest.ProtoReflect.Descriptor instead.
 func (*FilterHTMLRequest) Descriptor() ([]byte, []int) {
-	return file_url_service_proto_rawDescGZIP(), []int{2}
+	return file_proto_url_service_proto_rawDescGZIP(), []int{2}
 }
 
 func (x *FilterHTMLRequest) GetHtml() string {
@@ -171,7 +179,7 @@ type FilterHTMLResponse struct {
 
 func (x *FilterHTMLResponse) Reset() {
 	*x = FilterHTMLResponse{}
-	mi := &file_url_service_proto_msgTypes[3]
+	mi := &file_proto_url_service_proto_msgTypes[3]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -183,7 +191,7 @@ func (x *FilterHTMLResponse) String() string {
 func (*FilterHTMLResponse) ProtoMessage() {}
 
 func (x *FilterHTMLResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_url_service_proto_msgTypes[3]
+	mi := &file_proto_url_service_proto_msgTypes[3]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -196,7 +204,7 @@ func (x *FilterHTMLResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FilterHTMLResponse.ProtoReflect.Descriptor instead.
 func (*FilterHTMLResponse) Descriptor() ([]byte, []int) {
-	return file_url_service_proto_rawDescGZIP(), []int{3}
+	return file_proto_url_service_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *FilterHTMLResponse) GetFilteredHtml() string {
@@ -217,13 +225,14 @@ type URLResult struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
 	Url           string                 `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
 	IsMalicious   bool                   `protobuf:"varint,2,opt,name=is_malicious,json=isMalicious,proto3" json:"is_malicious,omitempty"`
+	Reason        string                 `protobuf:"bytes,3,opt,name=reason,proto3" json:"reason,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
 
 func (x *URLResult) Reset() {
 	*x = URLResult{}
-	mi := &file_url_service_proto_msgTypes[4]
+	mi := &file_proto_url_service_proto_msgTypes[4]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -235,7 +244,7 @@ func (x *URLResult) String() string {
 func (*URLResult) ProtoMessage() {}
 
 func (x *URLResult) ProtoReflect() protoreflect.Message {
-	mi := &file_url_service_proto_msgTypes[4]
+	mi := &file_proto_url_service_proto_msgTypes[4]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -248,7 +257,7 @@ func (x *URLResult) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use URLResult.ProtoReflect.Descriptor instead.
 func (*URLResult) Descriptor() ([]byte, []int) {
-	return file_url_service_proto_rawDescGZIP(), []int{4}
+	return file_proto_url_service_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *URLResult) GetUrl() string {
@@ -265,26 +274,35 @@ func (x *URLResult) GetIsMalicious() bool {
 	return false
 }
 
-var File_url_service_proto protoreflect.FileDescriptor
+func (x *URLResult) GetReason() string {
+	if x != nil {
+		return x.Reason
+	}
+	return ""
+}
 
-const file_url_service_proto_rawDesc = "" +
+var File_proto_url_service_proto protoreflect.FileDescriptor
+
+const file_proto_url_service_proto_rawDesc = "" +
 	"\n" +
-	"\x11url_service.proto\x12\n" +
+	"\x17proto/url_service.proto\x12\n" +
 	"urlservice\"#\n" +
 	"\x0fCheckURLRequest\x12\x10\n" +
-	"\x03url\x18\x01 \x01(\tR\x03url\"G\n" +
+	"\x03url\x18\x01 \x01(\tR\x03url\"_\n" +
 	"\x10CheckURLResponse\x12\x10\n" +
 	"\x03url\x18\x01 \x01(\tR\x03url\x12!\n" +
-	"\fis_malicious\x18\x02 \x01(\bR\visMalicious\"'\n" +
+	"\fis_malicious\x18\x02 \x01(\bR\visMalicious\x12\x16\n" +
+	"\x06reason\x18\x03 \x01(\tR\x06reason\"'\n" +
 	"\x11FilterHTMLRequest\x12\x12\n" +
 	"\x04html\x18\x01 \x01(\tR\x04html\"q\n" +
 	"\x12FilterHTMLResponse\x12#\n" +
 	"\rfiltered_html\x18\x01 \x01(\tR\ffilteredHtml\x126\n" +
 	"\vurl_results\x18\x02 \x03(\v2\x15.urlservice.URLResultR\n" +
-	"urlResults\"@\n" +
+	"urlResults\"X\n" +
 	"\tURLResult\x12\x10\n" +
 	"\x03url\x18\x01 \x01(\tR\x03url\x12!\n" +
-	"\fis_malicious\x18\x02 \x01(\bR\visMalicious2\xa0\x01\n" +
+	"\fis_malicious\x18\x02 \x01(\bR\visMalicious\x12\x16\n" +
+	"\x06reason\x18\x03 \x01(\tR\x06reason2\xa0\x01\n" +
 	"\n" +
 	"URLService\x12E\n" +
 	"\bCheckURL\x12\x1b.urlservice.CheckURLRequest\x1a\x1c.urlservice.CheckURLResponse\x12K\n" +
@@ -292,26 +310,26 @@ const file_url_service_proto_rawDesc = "" +
 	"FilterHTML\x12\x1d.urlservice.FilterHTMLRequest\x1a\x1e.urlservice.FilterHTMLResponseB\tZ\a./protob\x06proto3"
 
 var (
-	file_url_service_proto_rawDescOnce sync.Once
-	file_url_service_proto_rawDescData []byte
+	file_proto_url_service_proto_rawDescOnce sync.Once
+	file_proto_url_service_proto_rawDescData []byte
 )
 
-func file_url_service_proto_rawDescGZIP() []byte {
-	file_url_service_proto_rawDescOnce.Do(func() {
-		file_url_service_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_url_service_proto_rawDesc), len(file_url_service_proto_rawDesc)))
+func file_proto_url_service_proto_rawDescGZIP() []byte {
+	file_proto_url_service_proto_rawDescOnce.Do(func() {
+		file_proto_url_service_proto_rawDescData = protoimpl.X.CompressGZIP(unsafe.Slice(unsafe.StringData(file_proto_url_service_proto_rawDesc), len(file_proto_url_service_proto_rawDesc)))
 	})
-	return file_url_service_proto_rawDescData
+	return file_proto_url_service_proto_rawDescData
 }
 
-var file_url_service_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
-var file_url_service_proto_goTypes = []any{
+var file_proto_url_service_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_proto_url_service_proto_goTypes = []any{
 	(*CheckURLRequest)(nil),    // 0: urlservice.CheckURLRequest
 	(*CheckURLResponse)(nil),   // 1: urlservice.CheckURLResponse
 	(*FilterHTMLRequest)(nil),  // 2: urlservice.FilterHTMLRequest
 	(*FilterHTMLResponse)(nil), // 3: urlservice.FilterHTMLResponse
 	(*URLResult)(nil),          // 4: urlservice.URLResult
 }
-var file_url_service_proto_depIdxs = []int32{
+var file_proto_url_service_proto_depIdxs = []int32{
 	4, // 0: urlservice.FilterHTMLResponse.url_results:type_name -> urlservice.URLResult
 	0, // 1: urlservice.URLService.CheckURL:input_type -> urlservice.CheckURLRequest
 	2, // 2: urlservice.URLService.FilterHTML:input_type -> urlservice.FilterHTMLRequest
@@ -324,26 +342,26 @@ var file_url_service_proto_depIdxs = []int32{
 	0, // [0:1] is the sub-list for field type_name
 }
 
-func init() { file_url_service_proto_init() }
-func file_url_service_proto_init() {
-	if File_url_service_proto != nil {
+func init() { file_proto_url_service_proto_init() }
+func file_proto_url_service_proto_init() {
+	if File_proto_url_service_proto != nil {
 		return
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
-			RawDescriptor: unsafe.Slice(unsafe.StringData(file_url_service_proto_rawDesc), len(file_url_service_proto_rawDesc)),
+			RawDescriptor: unsafe.Slice(unsafe.StringData(file_proto_url_service_proto_rawDesc), len(file_proto_url_service_proto_rawDesc)),
 			NumEnums:      0,
 			NumMessages:   5,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
-		GoTypes:           file_url_service_proto_goTypes,
-		DependencyIndexes: file_url_service_proto_depIdxs,
-		MessageInfos:      file_url_service_proto_msgTypes,
+		GoTypes:           file_proto_url_service_proto_goTypes,
+		DependencyIndexes: file_proto_url_service_proto_depIdxs,
+		MessageInfos:      file_proto_url_service_proto_msgTypes,
 	}.Build()
-	File_url_service_proto = out.File
-	file_url_service_proto_goTypes = nil
-	file_url_service_proto_depIdxs = nil
+	File_proto_url_service_proto = out.File
+	file_proto_url_service_proto_goTypes = nil
+	file_proto_url_service_proto_depIdxs = nil
 }

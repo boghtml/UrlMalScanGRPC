@@ -20,21 +20,22 @@ func NewURLHandler(urlService *service.URLService) *URLHandler {
 func (h *URLHandler) CheckURL(ctx context.Context, req *pb.CheckURLRequest) (*pb.CheckURLResponse, error) {
 	log.Printf("Received request to verify URL: %s", req.Url)
 
-	isMalicious, err := h.urlService.CheckURL(ctx, req.Url)
+	isMalicious, reason, err := h.urlService.CheckURL(ctx, req.Url)
 	if err != nil {
 		log.Printf("Error while checking URL: %v", err)
 		return nil, err
 	}
 
-	log.Printf("URL %s checked, result: %t", req.Url, isMalicious)
+	log.Printf("URL %s checked, result: %t, reason: %s", req.Url, isMalicious, reason)
 	return &pb.CheckURLResponse{
 		Url:         req.Url,
 		IsMalicious: isMalicious,
+		Reason:      reason,
 	}, nil
 }
 
 func (h *URLHandler) FilterHTML(ctx context.Context, req *pb.FilterHTMLRequest) (*pb.FilterHTMLResponse, error) {
-	log.Printf("Received request to filter HTML: %s", req.Html)
+	log.Printf("Received request to filter HTML (length: %d bytes)", len(req.Html))
 	filteredHTML, results, err := h.urlService.FilterHTML(ctx, req.Html)
 	if err != nil {
 		log.Printf("Error while filtering HTML: %v", err)
@@ -46,10 +47,11 @@ func (h *URLHandler) FilterHTML(ctx context.Context, req *pb.FilterHTMLRequest) 
 		urlResults = append(urlResults, &pb.URLResult{
 			Url:         result["url"].(string),
 			IsMalicious: result["is_malicious"].(bool),
+			Reason:      result["reason"].(string),
 		})
 	}
 
-	log.Printf("Returning filtered HTML: %s, with %d URL results", filteredHTML, len(urlResults))
+	log.Printf("HTML filtered, found %d URLs, returning response", len(urlResults))
 	return &pb.FilterHTMLResponse{
 		FilteredHtml: filteredHTML,
 		UrlResults:   urlResults,

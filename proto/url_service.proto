@@ -16,6 +16,7 @@ message CheckURLRequest {
 message CheckURLResponse {
   string url = 1;
   bool is_malicious = 2;
+  string reason = 3;
 }
 
 message FilterHTMLRequest {
@@ -30,4 +31,5 @@ message FilterHTMLResponse {
 message URLResult {
   string url = 1;
   bool is_malicious = 2;
+  string reason = 3;
 }
