@@ -4,10 +4,13 @@ import (
 	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/boghtml/url-filter-project/client/internal/grpc_client"
 	pb "github.com/boghtml/url-filter-project/proto"
 	"github.com/gin-gonic/gin"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type RESTHandler struct {
@@ -40,6 +43,13 @@ func (h *RESTHandler) CheckURL(c *gin.Context) {
 
 	resp, err := h.urlClient.CheckURL(req.URL)
 	if err != nil {
+
+		st, ok := status.FromError(err)
+		if ok && st.Code() == codes.InvalidArgument && strings.Contains(st.Message(), "Invalid URL format") {
+			c.JSON(http.StatusBadRequest, gin.H{"error": st.Message()})
+			return
+		}
+
 		log.Printf("Error checking URL via gRPC: %v", err)
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

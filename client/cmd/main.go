@@ -11,7 +11,8 @@ import (
 
 func main() {
 	port := getEnv("PORT", "8080")
-	grpcServerAddr := getEnv("GRPC_SERVER_ADDR", "server:50051")
+
+	grpcServerAddr := getEnv("GRPC_SERVER_ADDR", "localhost:50051")
 
 	urlClient, err := grpc_client.NewURLClient(grpcServerAddr)
 	if err != nil {

@@ -2,12 +2,17 @@ package service
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net/url"
 	"regexp"
 	"strings"
 
 	"github.com/boghtml/url-filter-project/server/internal/cache"
+)
+
+var (
+	ErrInvalidURL = errors.New("invalid URL format")
 )
 
 type URLServiceIface interface {
@@ -27,7 +32,7 @@ type URLService struct {
 }
 
 func NewURLService(c cache.URLCacheIface) *URLService {
-	regexPattern := `(https?://[^\s"'<>]+|www\.[^\s"'<>]+)`
+	regexPattern := `(?:(?:(?:https?|ftp|file|mailto|data|irc|gopher|telnet|nntp|news|ldap|ssh)://)|www\.)[^\s"''<>(){}[\],;]*(?:(?:([^\s"''<>(){}[\],;]*)|(?:[[^\s"''<>(){}[\],;] *]))[^\s"''<>(){}[\],;]*)*[^\s"''<>(){}[\],;]|(?:(?:https?|ftp|file|gopher|telnet)://)___(?:[0-9a-fA-F]{0,4}:){2,7}[0-9a-fA-F]{0,4}_*?(?:/[^\s])?`
 	urlRegex, err := regexp.Compile(regexPattern)
 	if err != nil {
 		log.Fatalf("Failed to compile url regex: %v", err)
@@ -45,11 +50,39 @@ func NewURLService(c cache.URLCacheIface) *URLService {
 		suspiciousPatterns:   []string{"phish", "hack", "malware", "trojan", "virus", "warez", "crack", "keygen"},
 		suspiciousExtensions: []string{".exe", ".bat", ".dll", ".scr", ".vbs", ".ps1", ".cmd", ".msi"},
 		ipRegex:              ipRegex,
-		maxURLLength:         250,
+		maxURLLength:         2048,
 	}
 }
 
 func (s *URLService) CheckURL(ctx context.Context, urlStr string) (bool, string, error) {
+
+	parsedURL, err := url.Parse(urlStr)
+	if err != nil || parsedURL.Scheme == "" || parsedURL.Host == "" {
+		log.Printf("Invalid URL format: %s - %v", urlStr, err)
+		return false, "", ErrInvalidURL
+	}
+
+	validSchemes := map[string]bool{
+		"http":   true,
+		"https":  true,
+		"ftp":    true,
+		"file":   true,
+		"mailto": true,
+		"data":   true,
+		"irc":    true,
+		"gopher": true,
+		"telnet": true,
+		"nntp":   true,
+		"news":   true,
+		"ldap":   true,
+		"ssh":    true,
+	}
+
+	if !validSchemes[parsedURL.Scheme] {
+		log.Printf("Invalid URL scheme: %s", parsedURL.Scheme)
+		return false, "", ErrInvalidURL
+	}
+
 	if isMalicious, reason, found := s.cache.Get(ctx, urlStr); found {
 		log.Printf("Cache hit for URL %s: isMalicious=%v, reason=%s", urlStr, isMalicious, reason)
 		return isMalicious, reason, nil
@@ -67,41 +100,88 @@ func (s *URLService) CheckURL(ctx context.Context, urlStr string) (bool, string,
 }
 
 func (s *URLService) FilterHTML(ctx context.Context, html string) (string, []map[string]interface{}, error) {
-	urls := s.urlRegex.FindAllString(html, -1)
-	log.Printf("Found %d URLs in HTML", len(urls))
+	foundURLs := s.urlRegex.FindAllString(html, -1)
+	log.Printf("Found %d URLs in HTML", len(foundURLs))
 	filteredHTML := html
 
 	uniqueURLs := make(map[string]bool)
-	for _, url := range urls {
-		uniqueURLs[url] = true
+	for _, foundURL := range foundURLs {
+		uniqueURLs[foundURL] = true
 	}
 	log.Printf("Unique URLs count: %d", len(uniqueURLs))
 
 	results := make([]map[string]interface{}, 0)
 
-	for url := range uniqueURLs {
-		isMalicious, reason, err := s.CheckURL(ctx, url)
+	for foundURL := range uniqueURLs {
+
+		parsedURL, err := url.Parse(foundURL)
+		if err != nil || parsedURL.Scheme == "" || parsedURL.Host == "" {
+
+			results = append(results, map[string]interface{}{
+				"url":          foundURL,
+				"is_malicious": true,
+				"reason":       "Invalid URL format",
+			})
+			continue
+		}
+
+		validSchemes := map[string]bool{
+			"http":   true,
+			"https":  true,
+			"ftp":    true,
+			"file":   true,
+			"mailto": true,
+			"data":   true,
+			"irc":    true,
+			"gopher": true,
+			"telnet": true,
+			"nntp":   true,
+			"news":   true,
+			"ldap":   true,
+			"ssh":    true,
+		}
+
+		if !validSchemes[parsedURL.Scheme] {
+
+			results = append(results, map[string]interface{}{
+				"url":          foundURL,
+				"is_malicious": true,
+				"reason":       "Invalid URL scheme: " + parsedURL.Scheme,
+			})
+			continue
+		}
+
+		isMalicious, reason, err := s.CheckURL(ctx, foundURL)
 		if err != nil {
-			log.Printf("Error checking URL %s: %v", url, err)
+			if errors.Is(err, ErrInvalidURL) {
+
+				results = append(results, map[string]interface{}{
+					"url":          foundURL,
+					"is_malicious": true,
+					"reason":       "Invalid URL format",
+				})
+				continue
+			}
+			log.Printf("Error checking URL %s: %v", foundURL, err)
 			return "", nil, err
 		}
 
 		results = append(results, map[string]interface{}{
-			"url":          url,
+			"url":          foundURL,
 			"is_malicious": isMalicious,
 			"reason":       reason,
 		})
 
 		if isMalicious {
-			replacement := `<span class="blocked-url" data-original="` + url + `" data-reason="` + reason + `">[BLOCKED: ` + reason + `]</span>`
-			escapedURL := regexp.QuoteMeta(url)
+			replacement := `<span class="blocked-url" data-original="` + foundURL + `" data-reason="` + reason + `">[BLOCKED: ` + reason + `]</span>`
+			escapedURL := regexp.QuoteMeta(foundURL)
 
 			urlRegex := regexp.MustCompile(`(href|src)=["']` + escapedURL + `["']`)
-			filteredHTML = urlRegex.ReplaceAllString(filteredHTML, `$1="#" data-malicious="true" data-original-url="`+url+`" title="`+reason+`"`)
+			filteredHTML = urlRegex.ReplaceAllString(filteredHTML, `$1="#" data-malicious="true" data-original-url="`+foundURL+`" title="`+reason+`"`)
 
 			textRegex := regexp.MustCompile(escapedURL)
 			filteredHTML = textRegex.ReplaceAllString(filteredHTML, replacement)
-			log.Printf("Replaced malicious URL %s in HTML", url)
+			log.Printf("Replaced malicious URL %s in HTML", foundURL)
 		}
 	}
 
@@ -128,8 +208,29 @@ func (s *URLService) isURLMalicious(urlStr string) (bool, string) {
 		return true, reason
 	}
 
+	validSchemes := map[string]bool{
+		"http":   true,
+		"https":  true,
+		"ftp":    true,
+		"file":   true,
+		"mailto": true,
+		"data":   true,
+		"irc":    true,
+		"gopher": true,
+		"telnet": true,
+		"nntp":   true,
+		"news":   true,
+		"ldap":   true,
+		"ssh":    true,
+	}
+
+	if !validSchemes[parsedURL.Scheme] {
+		reason := "The URL scheme is invalid"
+		log.Printf("Invalid URL scheme %s: %s", parsedURL.Scheme, reason)
+		return true, reason
+	}
+
 	host := parsedURL.Hostname()
-	urlLower := strings.ToLower(urlStr)
 
 	for _, ext := range s.suspiciousExtensions {
 		if strings.HasSuffix(strings.ToLower(parsedURL.Path), ext) {
@@ -140,13 +241,19 @@ func (s *URLService) isURLMalicious(urlStr string) (bool, string) {
 	}
 
 	for _, badDomain := range s.blacklist {
-		if strings.Contains(host, badDomain) {
+		if strings.ToLower(host) == strings.ToLower(badDomain) {
+
+			if host != badDomain {
+
+				continue
+			}
 			reason := "The domain is blacklisted"
 			log.Printf("URL %s matches blacklist domain %s: %s", urlStr, badDomain, reason)
 			return true, reason
 		}
 	}
 
+	urlLower := strings.ToLower(urlStr)
 	for _, pattern := range s.suspiciousPatterns {
 		if strings.Contains(urlLower, pattern) {
 			reason := "The URL contains suspicious keywords"

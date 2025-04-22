@@ -16,33 +16,21 @@ type URLClient struct {
 }
 
 func NewURLClient(serverAddr string) (*URLClient, error) {
+	log.Printf("Connecting to gRPC server at %s", serverAddr)
 
-	var conn *grpc.ClientConn
-	var err error
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
-	for i := 0; i < 5; i++ {
-		log.Printf("Trying to connect to gRPC server at %s (attempt %d)", serverAddr, i+1)
-		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-
-		conn, err = grpc.DialContext(ctx, serverAddr,
-			grpc.WithTransportCredentials(insecure.NewCredentials()),
-			grpc.WithBlock())
-
-		cancel()
-
-		if err == nil {
-			log.Printf("Successfully connected to gRPC server at %s", serverAddr)
-			break
-		}
-
-		log.Printf("Failed to connect to gRPC server: %v. Retrying...", err)
-		time.Sleep(2 * time.Second)
-	}
+	conn, err := grpc.DialContext(ctx, serverAddr,
+		grpc.WithTransportCredentials(insecure.NewCredentials()),
+		grpc.WithBlock())
 
 	if err != nil {
+		log.Printf("Failed to connect to gRPC server: %v", err)
 		return nil, err
 	}
 
+	log.Printf("Successfully connected to gRPC server at %s", serverAddr)
 	client := pb.NewURLServiceClient(conn)
 
 	return &URLClient{

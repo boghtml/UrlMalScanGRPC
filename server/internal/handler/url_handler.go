@@ -2,10 +2,13 @@ package handler
 
 import (
 	"context"
+	"errors"
 	"log"
 
 	pb "github.com/boghtml/url-filter-project/proto"
 	"github.com/boghtml/url-filter-project/server/internal/service"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type URLHandler struct {
@@ -22,6 +25,9 @@ func (h *URLHandler) CheckURL(ctx context.Context, req *pb.CheckURLRequest) (*pb
 
 	isMalicious, reason, err := h.urlService.CheckURL(ctx, req.Url)
 	if err != nil {
+		if errors.Is(err, service.ErrInvalidURL) {
+			return nil, status.Error(codes.InvalidArgument, "Invalid URL format: "+req.Url)
+		}
 		log.Printf("Error while checking URL: %v", err)
 		return nil, err
 	}
